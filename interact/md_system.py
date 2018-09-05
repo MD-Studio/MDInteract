@@ -184,6 +184,8 @@ class System(object):
         if auto_chunk:
             free_memory = virtual_memory().free
             chunk = int((free_memory / 2) / self._ave_byte_size)
+            chunk = (chunk / step) * step
+            logger.info('set chunk size to: {0}'.format(chunk))
 
         # Iterload trajectory
         self.framecount = -1
