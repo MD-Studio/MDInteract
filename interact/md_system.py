@@ -183,7 +183,7 @@ class System(object):
         # Determine chunk size as function of available memory
         if auto_chunk:
             free_memory = virtual_memory().free
-            chunk = (free_memory / 2) / self._ave_byte_size
+            chunk = int((free_memory / 2) / self._ave_byte_size)
 
         # Iterload trajectory
         self.framecount = -1
