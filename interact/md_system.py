@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-file: md_system
+file: md_system.py
 
 Primary functions to parse Molecular Dynamics trajectory files or structure
 files as molecular system and return TopologyDataFrame objects.
@@ -34,8 +34,6 @@ class System(object):
         self.starttime = 0
         self.nframes = None
         self.topology = None
-
-        self._ave_byte_size = 1000000
 
         list(self.iter_frames(start=0, stop=2, step=1, chunk=2, auto_chunk=False))
 
@@ -146,7 +144,7 @@ class System(object):
         # Init TopologyDataFrame based on mdtraj_dataframe
         self.topology = TopologyDataFrame(mdtraj_dataframe.copy())
 
-    def iter_frames(self, start=0, stop=None, step=1, chunk=100, auto_chunk=True):
+    def iter_frames(self, start=0, stop=None, step=1, chunk=100, auto_chunk=True, ave_byte_size=1000000):
         """
         Iteratively load frames from a trajectory
 
@@ -183,8 +181,8 @@ class System(object):
         # Determine chunk size as function of available memory
         if auto_chunk:
             free_memory = virtual_memory().free
-            chunk = int((free_memory / 2) / self._ave_byte_size)
-            chunk = (chunk / step) * step
+            chunk = (free_memory / 2) / ave_byte_size
+            chunk = int((chunk / step) * step)
             logger.info('set chunk size to: {0}'.format(chunk))
 
         # Iterload trajectory
