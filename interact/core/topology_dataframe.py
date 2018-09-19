@@ -255,7 +255,7 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         return self._parent[(self._parent[mode].isin(self[mode].unique())) &
                             (self._parent['chainID'].isin(chainid_restriction))]
 
-    def contacts(self, target=None):
+    def contacts(self, target=None, intra=False):
         """
         Get the distance between the atoms in the current selection (source)
         and the target.
@@ -274,12 +274,19 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         :rtype:         :pandas:DataFrame
         """
 
-        # Get index of source (current selection) and target (without source)
         source_index = set(self['serial'])
-        if target is not None:
-            target_index = set(target['serial']).difference(source_index)
+
+        # Get intra-selection contacts (target == self)
+        if intra:
+            target_index = source_index
+
+        # Inter-selection contacts.
+        # Get index of source (current selection) and target (without source)
         else:
-            target_index = set(self['serial']).difference(source_index)
+            if target is not None:
+                target_index = set(target['serial']).difference(source_index)
+            else:
+                target_index = set(self['serial']).difference(source_index)
 
         # Get slice of contact matrix representing the selection, reformat to row based Dataframe
         contacts = self._distance_matrix.loc[source_index, target_index]
@@ -309,6 +316,27 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         contacts_frame['contact'] = 'nd'
 
         return contacts_frame.sort_values(by=('source', 'serial'))
+
+    def covalent_bonds(self, cutoff=constants['max_covalent_bond_dist']):
+        """
+        Return covalently bonded atoms in the selection as ContactFrame
+
+        :param target:   Atom selection to use as target for the bond search.
+                         Needs to be derived from the same parent topology as
+                         the source selection.
+        :type target:    :interact:TopologyDataFrame
+        :param cutoff:   covalent bond upper distance
+        :type cutoff:    :py:float
+
+        :return:         Covalently bonded atoms
+        :rtype:          :pandas:DataFrame
+        """
+
+        # Get all intra selection distances
+        cf = self.contacts(intra=True)
+
+        # Get atom pairs within covalent bonded distance
+        return cf[(cf[('target', 'distance')] >= 0.05) & (cf[('target', 'distance')] <= cutoff)]
 
     def is_amino_acid(self):
         """
