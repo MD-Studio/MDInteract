@@ -39,7 +39,7 @@ def mol2_to_dataframe(mol2_file, parse_multi_model=False, parse_coord=False,
 
     # Check for file
     if not os.path.isfile(mol2_file):
-        raise IOError('Tripos MOL2 file doe snot exist: {0}'.format(mol2_file))
+        raise IOError('Tripos MOL2 file does not exist: {0}'.format(mol2_file))
 
     # Prepare DataFrame columns
     mol2_dict = dict([(n, []) for n in columns])
