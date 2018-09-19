@@ -16,7 +16,7 @@ def eval_hbonds(contacts, topology, max_hbond_dist=0.41, hbond_don_anglediv=50.0
     Evaluate the presence of hydrogen bonded contacts in the provided
     contact DataFrame. This function does not evaluate water bridges.
 
-    Prerequisits:
+    Prerequisites:
     This function uses the SYBYL atom types to identify possible
     hydrogen bond donor and acceptor atoms. At least one covalently
     bonded hydrogen is expected for donors and subsequently the
@@ -50,8 +50,7 @@ def eval_hbonds(contacts, topology, max_hbond_dist=0.41, hbond_don_anglediv=50.0
     N.2, O.2, O.co2, S.a)
 
     Algorithm:
-    1) Select all heavy atom contacts within max_hbond_dist not involving
-       waters.
+    1) Select all heavy atom contacts within max_hbond_dist.
     2) Identify donor-acceptor pairs for source to target and target to
        source based on SYBYL atom types (see below).
     3) Check if donor has at least one covalently bonded H-atom
@@ -122,9 +121,8 @@ def eval_hbonds(contacts, topology, max_hbond_dist=0.41, hbond_don_anglediv=50.0
     :rtype:                    :pandas:DataFrame
     """
 
-    # Preselect all contacts below max_hbond_dist not involving waters
-    hbdist = contacts[(contacts['target', 'distance'] <= max_hbond_dist) &
-                      (contacts['target', 'resName'] != 'HOH')]
+    # Preselect all contacts below max_hbond_dist
+    hbdist = contacts[(contacts['target', 'distance'] <= max_hbond_dist)]
 
     logger.info("Init eval_hbonds with {0} contacts using: max_hbond_dist={1}".format(len(hbdist), max_hbond_dist))
 
