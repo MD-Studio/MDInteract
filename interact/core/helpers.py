@@ -2,6 +2,58 @@
 
 from interact.core.geometry import is_planar
 
+
+def renumber(topology, start=None, column='resSeq', retain_gab=True):
+    """
+    Renumber a numeric column in the TopologyDataFrame
+
+    Select the column to renumber by column header name using the `column`
+    argument. Renumber starting from a new `start` number or the first number
+    in the column.
+    If there is a gab in the numeric sequence the `retain_gab` argument will
+    correct for this in the renumbered sequence.
+
+    :param topology:
+    :param start:       start number
+    :param column:      column name of numeric column to renumber
+    :return:
+    """
+
+    if not column in topology.columns:
+        raise TypeError('No such column: {0}'.format(column))
+
+    numbers = topology[column].values
+    if start is None:
+        start = int(numbers[0])
+
+    renumbered = []
+    current = None
+    for nr in numbers:
+        if current is None:
+            current = nr
+
+        if current != nr:
+
+            if retain_gab:
+                diff = nr - current
+                if diff > 1:
+                    start += diff
+                else:
+                    start += 1
+            else:
+                start += 1
+
+            current = nr
+
+        renumbered.append(start)
+
+    if len(renumbered) != len(numbers):
+        raise ArithmeticError('Renumbering failed, length mismatch')
+
+    topology[column] = renumbered
+    return topology
+
+
 def set_contact_type(current, add):
 
     current = current.values[0].split()
@@ -21,6 +73,7 @@ def remove_contact_type(current, remove):
     if current:
         return ' '.join(set(current))
     return 'nd'
+
 
 def is_aromatic(ring, max_div=7.5, aromatic_attypes={'C.ar', 'N.ar', 'C.3', 'C.2', 'N.3', 'N.2', 'N.pl3', 'O.2'}):
     """
