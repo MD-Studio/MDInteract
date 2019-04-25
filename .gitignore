@@ -1,14 +1,5 @@
 ###Git ignore file for LIEStudio repository
 
-### LIEStudio specific
-app/typings/
-app/dist/
-data/logs/
-data/liedb/
-docs/html/
-bin/
-tmp/
-
 # This file is different per user
 data/settings.json
 
@@ -136,45 +127,16 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 
-# Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
-.grunt
-
-# node-waf configuration
-.lock-wscript
-
-# Compiled binary addons (http://nodejs.org/api/addons.html)
-build/Release
-
-# Dependency directory
-# https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
-node_modules
-
 # Docker
 docker/.INSTALLING
 
+# Jypyter Notebook checkpoint files
+.ipynb_checkpoints/
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
-# User-specific stuff:
-.idea/workspace.xml
-.idea/tasks.xml
-
-# Sensitive or high-churn files:
-.idea/dataSources/
-.idea/dataSources.ids
-.idea/dataSources.xml
-.idea/dataSources.local.xml
-.idea/sqlDataSources.xml
-.idea/dynamic.xml
-.idea/uiDesigner.xml
-
-# Gradle:
-.idea/gradle.xml
-.idea/libraries
-
-# Mongo Explorer plugin:
-.idea/mongoSettings.xml
+.idea/
 
 ## File-based project format:
 *.iws
@@ -199,28 +161,5 @@ fabric.properties
 # files generated on merge conflicts
 *.orig
 
-# Ignore compiled typescript
-app/gulp/*.js
-app/gulp/*.map
-app/gulp/tasks/*.js
-app/gulp/tasks/*.map
-app/src/*.js
-app/src/**/*.map
-app/src/**/*.js
-app/gulpfile.js
-app/gulpfile.js.map
-app/bower_components/*
-components/*/data
-docker/.USERDONE
-/key.priv
-/key.pub
-
 # emacs
 *~
-
-# MDSTUDIO
-cerise_config.json
-venv
-.env
-**/.settings.*.yml
-
