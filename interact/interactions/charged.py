@@ -121,8 +121,8 @@ def eval_saltbridge(contact_frame, topology, max_charge_dist=0.55):
     return contact_frame
 
 
-def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefilter=5.5, heme_dist_max=3.5,
-                           heme_dist_min=0, min_heme_coor_angle=105, max_heme_coor_angle=160, fe_ox_dist=1.6,
+def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefilter=0.55, heme_dist_max=0.35,
+                           heme_dist_min=0, min_heme_coor_angle=105, max_heme_coor_angle=160, fe_ox_dist=0.16,
                            exclude=('H', 'O.3', 'O.2', 'O.co2', 'O.spc', 'O.t3p', 'C.cat', 'S.o2')):
     """
     Evaluate heme coordination of ligand atoms
@@ -131,21 +131,21 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
     rings = rings or []
 
     # Select all atoms within heme_dist_prefilter distance from Fe excluding atoms in exclude list
-    fedist = contact_frame[(contact_frame['target', 'atname'] == 'FE') &
+    fedist = contact_frame[(contact_frame['target', 'name'] == 'FE') &
                            (~contact_frame['source', 'attype'].isin(exclude)) &
                            (contact_frame['target', 'distance'] < heme_dist_prefilter)]
     if fedist.empty:
         return contact_frame
 
     # Get Fe atom
-    fe = topology[(topology['resName'] == 'HEM') & (topology['atname'] == 'FE')]
+    fe = topology[(topology['resName'] == 'HEM') & (topology['name'] == 'FE')]
     if fe.empty:
         logger.warn("Unable to asses heme coordination. Fe atom not found")
         return contact_frame
 
     # Get four nitrogen atoms coordinating the Fe atom
-    fe_neigh = fe.neighbours(cutoff=3)
-    fe_coordinating = fe_neigh[(fe_neigh['resName'] == 'HEM') & (fe_neigh['elem'] == 'N')].sort_values(by='atname')
+    fe_neigh = fe.neighbours(cutoff=0.3)
+    fe_coordinating = fe_neigh[(fe_neigh['resName'] == 'HEM') & (fe_neigh['element'] == 'N')].sort_values(by='name')
     if len(fe_coordinating) != 4:
         logger.warn("Unable to asses heme coordination. Found {0} nitrogen atoms coordinating Fe. Expected 4".format(
             len(fe_coordinating)))
@@ -157,8 +157,8 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
                                              min_heme_coor_angle, max_heme_coor_angle, fe_ox_dist))
 
     # Calculate normals between Nitrogens -> Fe vectors
-    fe_coor = fe[['xcoor', 'ycoor', 'zcoor']].values[0]
-    n_coor = fe_coordinating[['xcoor', 'ycoor', 'zcoor']].values - fe_coor
+    fe_coor = fe.coord
+    n_coor = fe_coordinating.coord - fe_coor
 
     m1 = numpy.cross(n_coor[0], n_coor[1])
     m2 = numpy.cross(n_coor[1], n_coor[2])
@@ -173,9 +173,9 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
         ['{0:.3f}'.format(c) for c in dummyox])))
 
     # Check the coordination of the Fe atom by the SG atom of the Cys below Heme
-    sg = fe_neigh[(fe_neigh['resName'] == 'CYS') & (fe_neigh['atname'] == 'SG')]
+    sg = fe_neigh[(fe_neigh['resName'] == 'CYS') & (fe_neigh['name'] == 'SG')]
     if not sg.empty:
-        sg_angle = angle(dummyox, fe_coor, sg[['xcoor', 'ycoor', 'zcoor']].values[0])
+        sg_angle = angle(dummyox, fe_coor, sg.coord)
         if not 160 < sg_angle < 200:
             logger.warn("Angle between reconstructed oxygen -> Fe -> Cys SG has unusual value {0:.3f}".format(sg_angle))
     else:
@@ -189,7 +189,7 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
         aromatic_center = aromatic.center()
         aromatic_fe_dist = distance(fe_coor, aromatic_center)
         if aromatic_fe_dist < heme_dist_prefilter:
-            aromatic_norm = plane_fit(aromatic[['xcoor', 'ycoor', 'zcoor']].values, center=aromatic_center)
+            aromatic_norm = plane_fit(aromatic.coord, center=aromatic_center)
             aromatic_norm_angle = angle(aromatic_norm, mv, deg=True)
             aromatic_norm_angle = min(aromatic_norm_angle,
                                       180 - aromatic_norm_angle if not 180 - aromatic_norm_angle < 0 else
@@ -202,7 +202,7 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
     # Get ligand atoms coordinated
     for idx, n in fedist.iterrows():
 
-        source = topology[topology['atnum'] == n['source', 'atnum']]
+        source = topology[topology['serial'] == n['source', 'serial']]
         source_atom_type = n['source', 'attype']
         z = source.coord
 
@@ -210,24 +210,24 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
         if source_atom_type in ('N.ar', 'N.2', 'N.3'):
             ar_norm_angle = 90
             for ring in ring_normals:
-                if n['source', 'atnum'] in ring[-1]:
+                if n['source', 'serial'] in ring[-1]:
                     ar_norm_angle = ring[2]
                     break
             fe_dist = distance(z, fe_coor)
             fe_offset = distance(projection(mv, fe_coor, z), fe_coor)
-            if 45 < ar_norm_angle < 95 and fe_dist < 3.5 and fe_offset < 1.0:
+            if 45 < ar_norm_angle < 95 and fe_dist < 0.35 and fe_offset < 0.1:
                 contact_frame.loc[idx, 'contact'] = set_contact_type(contact_frame.loc[idx, 'contact'].values[0], 'hc')
                 contact_frame.loc[idx, ('target', 'angle')] = ar_norm_angle
                 logger.info(
                     "Heme Fe coordination with {0} {1}. Distance: {2:.2f} A. offset: {3:.2f} A plane normal angle: {4:.2f}".format(
-                        n['source', 'atnum'],
-                        n['source', 'atname'], fe_dist, fe_offset, ar_norm_angle))
+                        n['source', 'serial'],
+                        n['source', 'name'], fe_dist, fe_offset, ar_norm_angle))
 
         # Check for possible sites of metabolism and label as 'hm'.
         # Filter on covalent neighbours and apply knowledge based rules.
         if source_atom_type in ('C.2', 'C.3', 'C.ar', 'N.1', 'N.2', 'N.4', 'N.pl3', 'S.3'):
-            cutoff = 1.6
-            if source_atom_type == 'S.3': cutoff = 1.8
+            cutoff = 0.16
+            if source_atom_type == 'S.3': cutoff = 0.18
             neigh = source.neighbours(cutoff=cutoff)
             neigh_atom_types = set(neigh['attype'])
 
@@ -236,70 +236,70 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
                     neigh_atom_types.intersection({'H', 'Cl', 'I', 'Br', 'F', 'Hal'})) == 0:
                 logger.debug(
                     "Ligand target atom {0}-{1} excluded. Atom type {2} not covalently bonded to: H,Cl,I,Br,F or Hal".format(
-                        n['source', 'atnum'], n['source', 'atname'], source_atom_type))
+                        n['source', 'serial'], n['source', 'name'], source_atom_type))
                 continue
 
             # If ligand atom is of type N.4 it should contain at least one covalently bonded atom of type H
             if source_atom_type == 'N.4' and not 'H' in neigh_atom_types:
                 logger.debug(
                     "Ligand target atom {0}-{1} excluded. Atom type N.4 not covalently bonded to hydrogen".format(
-                        n['source', 'atnum'], n['source', 'atname']))
+                        n['source', 'serial'], n['source', 'name']))
                 continue
 
             # Exclude carbons that are a part of ketone or carboxylate
             if source_atom_type == 'C.2' and 'O.2' in neigh_atom_types or 'O.co2' in neigh_atom_types:
                 logger.debug(
                     "Ligand target atom {0}-{1} excluded. Atom type C.2 part of ketone or carboxylate group.".format(
-                        n['source', 'atnum'], n['source', 'atname']))
+                        n['source', 'serial'], n['source', 'name']))
                 continue
 
             # Additional check on S.O2 wrongly labeled as S.3 (PLANTS?)
             if source_atom_type == 'S.3' and neigh[neigh['attype'] == 'O.2'].shape[0] == 2:
                 logger.debug(
                     "Ligand target atom {0}-{1} excluded. Atom labeled as S.3 but probably S.O2 as it is covalently bonded to two O.2".format(
-                        n['source', 'atnum'], n['source', 'atname']))
+                        n['source', 'serial'], n['source', 'name']))
                 continue
 
             # If N.pl3 or N.2 check for nitro- or nitrate group.
             if source_atom_type in ('N.pl3', 'N.2') and (
                     'O.co2' in neigh_atom_types or len(neigh_atom_types.intersection(set(['O.2', 'O.3']))) == 2):
                 logger.debug("Ligand target atom {0}-{1} excluded. Atom type {2}, exclude nitro- nitrate group".format(
-                    n['source', 'atnum'], n['source', 'atname'], source_atom_type))
+                    n['source', 'serial'], n['source', 'name'], source_atom_type))
                 continue
 
             # Exclude (iso)-nitrile group
             if source_atom_type in 'N.1' and 'C.1' in neigh_atom_types:
                 logger.debug(
-                    "Ligand target atom {0}-{1} excluded. Carbon with Sp hybridized N".format(n['source', 'atnum'],
+                    "Ligand target atom {0}-{1} excluded. Carbon with Sp hybridized N".format(n['source', 'serial'],
                                                                                               n[
-                                                                                                  'source', 'atname']))
+                                                                                                  'source', 'name']))
                 continue
 
             # Check Heme-Nitrogen coordination (Type II binding).
             if source_atom_type in ('C.ar', 'N.ar'):
                 ar_norm_angle = None
                 for ring in ring_normals:
-                    if n['source', 'atnum'] in ring[-1]:
+                    if n['source', 'serial'] in ring[-1]:
                         ar_norm_angle = ring[2]
                         break
                 if ar_norm_angle and not (45 < ar_norm_angle < 85 or 95 < ar_norm_angle < 135):
                     logger.debug(
                         "Ligand target atom {0}-{1} excluded. Aromatic C or N part of ring with angle of {2:.2f} with respect to Heme plane".format(
-                            n['source', 'atnum'], n['source', 'atname'], ar_norm_angle))
+                            n['source', 'serial'], n['source', 'name'], ar_norm_angle))
                     continue
 
         fe_ox_angle = angle(fe_coor, dummyox, z[0])
         dist = distance(dummyox, z)
         if min_heme_coor_angle < abs(fe_ox_angle) < max_heme_coor_angle and heme_dist_min < dist < heme_dist_max:
-            contact_frame.loc[idx, 'contact'] = set_contact_type(contact_frame.loc[idx, 'contact'].values[0], 'hm')
+            contact_frame.loc[idx, 'contact'] = set_contact_type(contact_frame.loc[idx, 'contact'], 'hm')
             contact_frame.loc[idx, ('target', 'angle')] = fe_ox_angle
             logger.info(
                 "Heme Fe possible som with {0} {1}. Distance: {2:.3f} A. FE-O-X angle: {3:.3f}".format(
-                    n['source', 'atnum'], n['source', 'atname'], dist, fe_ox_angle))
+                    n['source', 'serial'], n['source', 'name'], dist, fe_ox_angle))
         else:
             logger.debug(
                 "Ligand target atom {0}-{1} excluded. Angle ({2:.3f}) or distance ({3:.3f}) criteria violated".format(
-                    n['source', 'atnum'], n['source', 'atname'], fe_ox_angle, dist))
+                    n['source', 'serial'], n['source', 'name'], fe_ox_angle, dist))
 
     return contact_frame
 
