@@ -77,7 +77,7 @@ def mol2_to_dataframe(mol2_file, parse_multi_model=False, parse_coord=False,
 
                 # Proper MOL2 file should have 9 columns
                 l = line.split()
-                if not len(l) == 9:
+                if len(l) < 9:
                     raise IOError('FormatError in mol2. Line: {0}'.format(line))
 
                 try:
