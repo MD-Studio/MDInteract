@@ -196,7 +196,10 @@ def eval_hbonds(contacts, topology, max_hbond_dist=0.41, hbond_don_anglediv=50.0
                         r = topology[topology['serial'] == i['serial']].neighbours(covalent=True)
                         if len(r) > 1:
                             substitutions += 1
-                    hbond_don_anglediv = (180 / float(substitutions))
+                    try:
+                        hbond_don_anglediv = (180 / float(substitutions))
+                    except ZeroDivisionError:
+                        hbond_don_anglediv = 0.0
 
                 if (180 - hbond_don_anglediv < abs(angle1) < 180 + hbond_don_anglediv) and \
                    (180 - hbond_acc_anglediv < abs(max(angle2)) < 180 + hbond_acc_anglediv) and \

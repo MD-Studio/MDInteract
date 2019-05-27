@@ -6,7 +6,7 @@ import itertools
 
 from interact import __module__
 from interact.core.helpers import set_contact_type
-from interact.core.geometry import plane_fit, distance, angle, projection
+from interact.core.geometry import plane_fit, distance, angle, projection, vector_angle
 from interact.interactions.utils import is_pication
 
 logger = logging.getLogger(__module__)
@@ -151,8 +151,8 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
             len(fe_coordinating)))
         return contact_frame
 
-    logger.debug("Run heme coordination detection on {0} possible contacts using: heme_dist_prefilter={1:.2f},"
-                 "heme_dist_min={2:.2f}, heme_dist_max={3:.2f}, min_heme_coor_angle={4:.2f}, max_heme_coor_angle={5:.2f},"
+    logger.debug("Run heme coordination detection on {0} possible contacts using: heme_dist_prefilter={1:.2f}, "
+                 "heme_dist_min={2:.2f}, heme_dist_max={3:.2f}, min_heme_coor_angle={4:.2f}, max_heme_coor_angle={5:.2f}, "
                  "fe_ox_dist={6:.2f}".format(fedist.shape[0], heme_dist_prefilter, heme_dist_min, heme_dist_max,
                                              min_heme_coor_angle, max_heme_coor_angle, fe_ox_dist))
 
@@ -165,12 +165,20 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
     m3 = numpy.cross(n_coor[2], n_coor[3])
     m4 = numpy.cross(n_coor[3], n_coor[0])
 
-    # Calculate dummy O atom from the average of the four normals
-    # Normalize normal mean, change vector size to 1.6 A and set point
-    mv = numpy.mean(numpy.vstack((m1, m2, m3, m4)), axis=0)
-    dummyox = ((mv / numpy.linalg.norm(mv)) * fe_ox_dist) + fe_coor
-    logger.info("Reconstructed oxygen atom placed {0}A above Heme Fe at position {1}".format(fe_ox_dist, ' '.join(
-        ['{0:.3f}'.format(c) for c in dummyox])))
+    # Is there an Oxygen above the heme (complex I) or do we need to place a dummy
+    close_fe_neigh = fe.neighbours(cutoff=0.2)
+    dummyox = close_fe_neigh[(close_fe_neigh['resName'] == 'HEM') & (close_fe_neigh['element'] == 'O')]
+    if len(dummyox) == 1:
+        dummyox = dummyox.coord
+        logger.info('Oxygen atom bonded to Fe (complex I)')
+
+    else:
+        # Calculate dummy O atom from the average of the four normals
+        # Normalize normal mean, change vector size to 1.6 A and set point
+        mv = numpy.mean(numpy.vstack((m1, m2, m3, m4)), axis=0)
+        dummyox = ((mv / numpy.linalg.norm(mv)) * fe_ox_dist) + fe_coor
+        logger.info("Reconstructed oxygen atom placed {0}nm above Heme Fe at position {1}".format(fe_ox_dist, ' '.join(
+            ['{0:.3f}'.format(c) for c in dummyox])))
 
     # Check the coordination of the Fe atom by the SG atom of the Cys below Heme
     sg = fe_neigh[(fe_neigh['resName'] == 'CYS') & (fe_neigh['name'] == 'SG')]
@@ -179,30 +187,31 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
         if not 160 < sg_angle < 200:
             logger.warn("Angle between reconstructed oxygen -> Fe -> Cys SG has unusual value {0:.3f}".format(sg_angle))
     else:
-        logger.warn("No CYS SG atom in a distance of 3.0A of the Heme Fe atom")
+        logger.warn("No CYS SG atom in a distance of 0.3nm of the Heme Fe atom")
 
     # Check if there are rings with there center of mass below heme_dist_prefilter from heme FE.
     # Calculate ring normals
     ring_normals = []
-    for ring in rings:
-        aromatic = topology.loc[ring, :]
+    for aromatic in rings:
         aromatic_center = aromatic.center()
         aromatic_fe_dist = distance(fe_coor, aromatic_center)
         if aromatic_fe_dist < heme_dist_prefilter:
             aromatic_norm = plane_fit(aromatic.coord, center=aromatic_center)
-            aromatic_norm_angle = angle(aromatic_norm, mv, deg=True)
+            aromatic_norm_angle = vector_angle(aromatic_norm, mv, deg=True)
             aromatic_norm_angle = min(aromatic_norm_angle,
                                       180 - aromatic_norm_angle if not 180 - aromatic_norm_angle < 0 else
                                       aromatic_norm_angle)
+
+            ring = aromatic.index.tolist()
             ring_normals.append((aromatic_center, aromatic_norm, aromatic_norm_angle, ring))
 
-            logger.info("Ring {0} close to heme Fe: distance center-Fe {1:.2f} A, normal angle heme plane-ring:"
+            logger.info("Ring {0} close to heme Fe: distance center-Fe {1:.2f}nm, normal angle heme plane-ring:"
                         "{2:.2f} deg.".format(ring, aromatic_fe_dist, aromatic_norm_angle))
 
     # Get ligand atoms coordinated
     for idx, n in fedist.iterrows():
 
-        source = topology[topology['serial'] == n['source', 'serial']]
+        source = topology[topology.index == n['source', 'index']]
         source_atom_type = n['source', 'attype']
         z = source.coord
 
@@ -210,13 +219,13 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
         if source_atom_type in ('N.ar', 'N.2', 'N.3'):
             ar_norm_angle = 90
             for ring in ring_normals:
-                if n['source', 'serial'] in ring[-1]:
+                if n['source', 'index'] in ring[-1]:
                     ar_norm_angle = ring[2]
                     break
             fe_dist = distance(z, fe_coor)
             fe_offset = distance(projection(mv, fe_coor, z), fe_coor)
             if 45 < ar_norm_angle < 95 and fe_dist < 0.35 and fe_offset < 0.1:
-                contact_frame.loc[idx, 'contact'] = set_contact_type(contact_frame.loc[idx, 'contact'].values[0], 'hc')
+                contact_frame.loc[idx, 'contact'] = set_contact_type(contact_frame.loc[idx, 'contact'], 'hc')
                 contact_frame.loc[idx, ('target', 'angle')] = ar_norm_angle
                 logger.info(
                     "Heme Fe coordination with {0} {1}. Distance: {2:.2f} A. offset: {3:.2f} A plane normal angle: {4:.2f}".format(
@@ -231,7 +240,8 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
             neigh = source.neighbours(cutoff=cutoff)
             neigh_atom_types = set(neigh['attype'])
 
-            # If ligand atom is of type C.3 or C.ar it should contain at least one covalently bonded atom of type ['H','Cl','I','Br','F','Hal']
+            # If ligand atom is of type C.3 or C.ar it should contain at least one covalently bonded atom
+            # of type ['H','Cl','I','Br','F','Hal']
             if source_atom_type in ('C.3', 'C.ar') and len(
                     neigh_atom_types.intersection({'H', 'Cl', 'I', 'Br', 'F', 'Hal'})) == 0:
                 logger.debug(
@@ -271,8 +281,7 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
             if source_atom_type in 'N.1' and 'C.1' in neigh_atom_types:
                 logger.debug(
                     "Ligand target atom {0}-{1} excluded. Carbon with Sp hybridized N".format(n['source', 'serial'],
-                                                                                              n[
-                                                                                                  'source', 'name']))
+                                                                                              n['source', 'name']))
                 continue
 
             # Check Heme-Nitrogen coordination (Type II binding).

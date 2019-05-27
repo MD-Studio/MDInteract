@@ -57,7 +57,7 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         :rtype:       :py:bool
         """
 
-        return set(other['serial']).issubset(set(self['serial']))
+        return set(other.index).issubset(set(self.index))
 
     def __getitem__(self, item):
 
@@ -203,8 +203,8 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
             target = self
 
         # Get atom numbers for source and target set
-        source_atoms = self['serial'].values
-        target_atoms = target['serial'].values
+        source_atoms = self.index.values
+        target_atoms = target.index.values
 
         # Restrict size of pairwise matrix
         matrix_size = len(source_atoms) * len(target_atoms)
@@ -274,7 +274,7 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         :rtype:         :pandas:DataFrame
         """
 
-        source_index = set(self['serial'])
+        source_index = set(self.index)
 
         # Get intra-selection contacts (target == self)
         if intra:
@@ -284,9 +284,9 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         # Get index of source (current selection) and target (without source)
         else:
             if target is not None:
-                target_index = set(target['serial']).difference(source_index)
+                target_index = set(target.index).difference(source_index)
             else:
-                target_index = set(self['serial']).difference(source_index)
+                target_index = set(self.index).difference(source_index)
 
         # Get slice of contact matrix representing the selection, reformat to row based Dataframe
         contacts = self._distance_matrix.loc[source_index, target_index]
@@ -294,16 +294,16 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         contacts.columns = ['target', 'source', 'distance']
 
         # Get selection for source and target from parent, reindex and concatenate into new DataFrame
-        source = self._parent.loc[(self._parent['serial'].isin(contacts['source'])), :].copy()
-        source.index = source['serial']
+        source = self._parent.loc[(self._parent.index.isin(contacts['source'])), :].copy()
+        source['index'] = source.index
         source = source.loc[contacts['source'], :]
         source.index = range(len(source))
-        target = self._parent.loc[(self._parent['serial'].isin(contacts['target'])), :].copy()
-        target.index = target['serial']
+        target = self._parent.loc[(self._parent.index.isin(contacts['target'])), :].copy()
+        target['index'] = target.index
         target = target.loc[contacts['target'], :]
         target.index = range(len(target))
 
-        columns = self.labels()
+        columns = source.columns.tolist()
         contacts_frame = concat([source, target, contacts['distance']], axis=1)
         multi_index = [(['source'] * len(columns) + ['target'] * (len(columns) + 1)), columns * 2 + ['distance']]
         contacts_frame.columns = multi_index
@@ -460,9 +460,9 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         for residue in self.residues():
             detected = residue.find_rings(**kwargs)
             for ring in detected:
-                serials.extend(list(ring['serial']))
+                serials.extend(list(ring.index))
 
-        return self['serial'].isin(serials)
+        return self.index.isin(serials)
 
     def residues(self, extend=False):
         """
@@ -531,16 +531,16 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
                 resseq = charge_selection['resSeq'].unique()[0]
                 parent = charge_selection._parent
 
-                n = list(charge_selection['serial'])
+                n = list(charge_selection.index)
                 sel = charge_selection
                 while not sel.empty:
                     neighbours = sel.neighbours(cutoff=constants['max_covalent_bond_dist'])
                     neighbours = neighbours[~neighbours['element'].isin(('C', 'H')) & (neighbours['resSeq'] == resseq)]
 
-                    serials = [i for i in list(neighbours['serial']) if i not in n]
+                    serials = [i for i in list(neighbours.index) if i not in n]
                     n.extend(serials)
-                    sel = parent[parent['serial'].isin(serials)]
+                    sel = parent[parent.index.isin(serials)]
 
-                centers.append((parent[parent['serial'].isin(n)], charge))
+                centers.append((parent[parent.index.isin(n)], charge))
 
         return centers

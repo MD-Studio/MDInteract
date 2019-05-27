@@ -93,7 +93,7 @@ def sssr(system, aromatic=True, check_planar=True, planarity_dihedral_max_div=7.
         bond_cutoff = 0.181
         logger.debug("Detected sulphur atom, adjust covalent bond length cutoff to {0:.3f} nm".format(bond_cutoff))
 
-    adjmatr = system._distance_matrix.loc[heavyatoms['serial'], heavyatoms['serial']]
+    adjmatr = system._distance_matrix.loc[heavyatoms.index, heavyatoms.index]
     boolmatr = adjmatr[(adjmatr > 0) & (adjmatr < bond_cutoff)].notnull().astype(int)
     logger.debug("{0} covalently linked heavy atoms in structure".format(len(adjmatr)))
 
@@ -202,7 +202,7 @@ def sssr(system, aromatic=True, check_planar=True, planarity_dihedral_max_div=7.
     for r in indexes:
 
         # Get ring selection
-        ring_selection = system[system['serial'].isin(rings[r])]
+        ring_selection = system[system.index.isin(rings[r])]
 
         # Check aromaticity
         if aromatic and not is_aromatic(ring_selection, max_div=planarity_dihedral_max_div):
