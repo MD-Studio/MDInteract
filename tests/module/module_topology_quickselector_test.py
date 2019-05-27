@@ -7,15 +7,15 @@ Unit tests for quick atom selection methods
 """
 
 import os
-import unittest
 
 from interact import System
 from interact.core.topology_series import TopologySeries
+from tests.module.unittest_baseclass import UnittestPythonCompatibility
 
 currpath = os.path.dirname(__file__)
 
 
-class TopologyDataframeTests(unittest.TestCase):
+class TopologyDataframeTests(UnittestPythonCompatibility):
     pdb_file = os.path.abspath(os.path.join(currpath, '../files/dnmt.pdb'))
     mol_file = os.path.abspath(os.path.join(currpath, '../files/dnmt.mol2'))
 

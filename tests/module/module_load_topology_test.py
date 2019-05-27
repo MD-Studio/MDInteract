@@ -44,8 +44,7 @@ class LoadTopologyTests(unittest.TestCase):
         Load topology including Tripos SYBYL atom types from mol2
         """
 
-        top = System(self.pdb_file, mol2_file=self.mol_file).topology
-
+        top = System(self.pdb_file, mol2file=self.mol_file).topology
         self.assertTrue('attype' in top.columns)
 
     def test_load_topology_instance(self):

@@ -7,18 +7,17 @@ Unit tests for the interact topology loader methods
 """
 
 import os
-import unittest
 
 from numpy import ndarray
-from pandas import DataFrame
 from test_data import *
 
 from interact.md_system import System
+from tests.module.unittest_baseclass import UnittestPythonCompatibility
 
 currpath = os.path.dirname(__file__)
 
 
-class TopologyDataframeTests(unittest.TestCase):
+class TopologyDataframeTests(UnittestPythonCompatibility):
     pdb_file = os.path.abspath(os.path.join(currpath, '../files/1acj.pdb'))
     mol_file = os.path.abspath(os.path.join(currpath, '../files/1acj.mol2'))
 
@@ -98,7 +97,7 @@ class TopologyDataframeTests(unittest.TestCase):
         """
 
         # Method requires pairwise distance matrix
-        top = System(self.pdb_file, mol2_file=self.mol_file).topology
+        top = System(self.pdb_file, mol2file=self.mol_file).topology
         sel = top[top['resName'] == 'THA']
         self.assertRaises(AttributeError, sel.neighbours)
 
@@ -208,7 +207,7 @@ class TopologyDataframeTests(unittest.TestCase):
             self.assertEqual(residue.shape, self.top[self.top['resSeq'].isin(residue['resSeq'])].shape)
 
 
-class RingFinderTests(unittest.TestCase):
+class RingFinderTests(UnittestPythonCompatibility):
 
     def load_topology(self, pdb_id):
 

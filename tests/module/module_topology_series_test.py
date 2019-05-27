@@ -7,16 +7,16 @@ Unit tests for the TopologySeries class
 """
 
 import os
-import unittest
 
 from numpy import ndarray
 
 from interact.core.topology_series import TopologySeries
 from interact.core.topology_dataframe import TopologyDataFrame
 from interact.md_system import System
+from tests.module.unittest_baseclass import UnittestPythonCompatibility, PY_PRIMITIVES
 
 
-class TopologySeriesTests(unittest.TestCase):
+class TopologySeriesTests(UnittestPythonCompatibility):
     currpath = os.path.dirname(__file__)
     pdb_file = os.path.abspath(os.path.join(currpath, '../files/1acj.pdb'))
     mol_file = os.path.abspath(os.path.join(currpath, '../files/1acj.mol2'))
@@ -101,7 +101,7 @@ class TopologySeriesTests(unittest.TestCase):
         # Single row attribute access
         for i,a in self.top.iterrows():
             for label in a.axes[0].tolist():
-                self.assertIsInstance(getattr(a, label), (str, unicode, int, float, bool))
+                self.assertIsInstance(getattr(a, label), PY_PRIMITIVES)
             break
 
     def test_topseries_labels(self):

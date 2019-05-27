@@ -7,16 +7,14 @@ Unit tests for distance matrix computations
 """
 
 import os
-import unittest
 
 from pandas import DataFrame
 
-from interact.core.topology_series import TopologySeries
-from interact.core.topology_dataframe import TopologyDataFrame
 from interact.md_system import System
+from tests.module.unittest_baseclass import UnittestPythonCompatibility
 
 
-class DistanceMatrixTests(unittest.TestCase):
+class DistanceMatrixTests(UnittestPythonCompatibility):
     currpath = os.path.dirname(__file__)
     pdb_file = os.path.abspath(os.path.join(currpath, '../files/1acj.pdb'))
     mol_file = os.path.abspath(os.path.join(currpath, '../files/1acj.mol2'))
