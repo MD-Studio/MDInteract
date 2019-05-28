@@ -165,9 +165,9 @@ class TopologyDataframeTests(UnittestPythonCompatibility):
         cdf = source.contacts(target=self.top)
 
         self.assertItemsEqual(list(cdf.columns.levels[0]), [u'source', u'target', u'contact'])
-        self.assertItemsEqual(list(cdf.columns.levels[1]), [u'chainID', u'distance', u'element', u'name', u'resName',
-                                                            u'resSeq', u'segmentID', u'serial', u'angle',
-                                                            u'charge', u'attype', u''])
+        self.assertItemsEqual(list(cdf.columns.levels[1]), [u'index', u'serial', u'name', u'element', u'resSeq',
+                                                            u'resName', u'chainID', u'segmentID', u'attype', u'charge',
+                                                            u'distance', u'angle', u''])
 
         self.assertEqual(len(cdf), 88145)
         self.assertEqual(list(cdf['source', 'resSeq'].unique()), [999])

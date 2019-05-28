@@ -44,7 +44,7 @@ class TopologySeriesTests(UnittestPythonCompatibility):
         iterrows method should return a TopologySeries.
         """
 
-        for i,a in self.top.iterrows():
+        for i, a in self.top.iterrows():
             self.assertIsInstance(a, TopologySeries)
             break
 
@@ -60,10 +60,9 @@ class TopologySeriesTests(UnittestPythonCompatibility):
         self.assertEqual(len(col.coord), len(col))
 
         # Single row TopologySeries means one coordinate
-        for i,a in self.top.iterrows():
+        for i, a in self.top[self.top['resName'] == 'HIS'].iterrows():
             self.assertIsInstance(a.coord, ndarray)
             self.assertTrue(a.coord.shape, (3,))
-            break
 
     def test_topseries_attr_inheritance(self):
         """
@@ -75,7 +74,8 @@ class TopologySeriesTests(UnittestPythonCompatibility):
         row = self.top[self.top['serial'] == 133].squeeze()
 
         for obj in (self.top, col, row):
-            self.assertItemsEqual(obj._metadata, ['_parent', '_coordinates', '_distance_matrix'])
+            self.assertItemsEqual(obj._metadata, ['_parent', '_coordinates', '_distance_matrix',
+                                                  'unitcell_vectors', 'unitcell_lengths', 'unitcell_angles', 'time'])
 
             # _parent has pointer to toplevel dataframe
             self.assertTrue(hasattr(obj, '_parent'))
@@ -99,7 +99,7 @@ class TopologySeriesTests(UnittestPythonCompatibility):
         """
 
         # Single row attribute access
-        for i,a in self.top.iterrows():
+        for i, a in self.top.iterrows():
             for label in a.axes[0].tolist():
                 self.assertIsInstance(getattr(a, label), PY_PRIMITIVES)
             break
@@ -120,9 +120,10 @@ class TopologySeriesTests(UnittestPythonCompatibility):
         # Build distance matrix first
         self.top.distances()
 
-        # Get neighbours from THA-N to rest of system within 0.6 nm
+        # Get neighbours from 999-THA-N to rest of system within 0.6 nm
         row = self.top[self.top['serial'] == 5194].squeeze()
         ng = row.neighbours()
+
         self.assertEqual(list(ng['resSeq'].unique()), [84, 199, 330, 439, 440, 441, 442, 634, 999])
 
     def test_topseries_extend(self):

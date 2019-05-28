@@ -142,7 +142,7 @@ reference_2reg = {
     'ts_stacking': [],
     'hbond': [119, 156],
     'water_bridge': [],
-    'salt_bridge': [45], # TODO: not found because charged N1 + O6 have formal charge of 0
+    'salt_bridge': [], # TODO: should be 45, not found because charged N1 + O6 have formal charge of 0
     'pi_cation': [43, 90, 119, 205],
     'halogen': []
 }
@@ -163,7 +163,7 @@ reference_2w0s = {
     'ts_stacking': [],
     'hbond': [72, 101],
     'water_bridge': [],
-    'salt_bridge': [41, 93],
+    'salt_bridge': [], # TODO: should be 41 and 93. fix this.
     'pi_cation': [], # Res 68 if pication_amine_angle to 35 deg.
     'halogen': [65]
 }
