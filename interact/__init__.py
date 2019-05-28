@@ -12,7 +12,7 @@ __licence__ = 'Apache Software License 2.0'
 __url__ = 'https://github.com/MD-Studio/MDInteract'
 __copyright__ = "Copyright (c) VU University, Amsterdam"
 __rootpath__ = os.path.dirname(os.path.abspath(__file__))
-__all__ = ['System', 'reference_data']
+__all__ = ['System', 'reference_data', 'constants', '__module__']
 
 from glob import glob
 from pandas import read_csv

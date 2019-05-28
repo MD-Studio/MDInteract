@@ -69,8 +69,10 @@ def sssr(system, aromatic=True, check_planar=True, planarity_dihedral_max_div=7.
         on any ring dihedral deviating more then planarity_dihedral_max_div
         from planar 180 deg.
 
-    :param check_aromatic:             Check for ring aromaticity.
-    :type check_aromatic:              :py:bool
+    :param system:                     molecular system containing rings
+    :type system:                      :interact:TopologyDataFrame
+    :param aromatic:                   ring is aromatic
+    :type aromatic:                    :py:bool
     :param check_planar:               Check for ring planarity.
     :type check_planar:                :py:bool
     :param planarity_dihedral_max_div: planarity cutoff for aromatic rings

@@ -132,7 +132,7 @@ def eval_hbonds(contacts, topology, max_hbond_dist=0.41, hbond_don_anglediv=50.0
     donor_avoid = ('N.pl3', 'N.plc', 'N.ar', 'N.2', 'O.2', 'O.co2', 'S.a')
 
     # Define donor_acceptor pairs. Source donor - target acceptor and vice versa
-    donor_acceptor_dict = {}
+    donor_acceptor_dict = dict()
     donor_acceptor_dict['source'] = hbdist[(hbdist['source', 'attype'].isin(donor_attypes)) &
                                            (hbdist['target', 'attype'].isin(accpt_attypes))]
     donor_acceptor_dict['target'] = hbdist[(hbdist['source', 'attype'].isin(accpt_attypes)) &
@@ -167,7 +167,7 @@ def eval_hbonds(contacts, topology, max_hbond_dist=0.41, hbond_don_anglediv=50.0
             # There should at least be covalent neighbours (e.a. not ions etc.)
             if donor_bonded.empty or acceptor_bonded.empty:
                 logger.debug('No neighbours in contact pair {0}-{1}, skipping'.format(n[direction, 'serial'],
-                                                                                       n[target, 'serial']))
+                                                                                      n[target, 'serial']))
                 continue
 
             # Check if there are H-atoms attached and asses H-bond geometry criteria
@@ -280,9 +280,9 @@ def eval_water_bridges(contacts, topology, min_wbridge_dist=0.25, max_wbridge_di
         return contacts
 
     logger.info("Run water bridge detection on {0} possible contacts using: min_wbridge_dist={1},"
-                 "max_wbridge_dist={2}, min_omega_angle={3}, max_omega_angle={4}, min_theta_angle={5},"
-                 "wbfilter={6}".format(len(wbdist), min_wbridge_dist, max_wbridge_dist, min_omega_angle,
-                                       max_omega_angle, min_theta_angle, wbfilter))
+                "max_wbridge_dist={2}, min_omega_angle={3}, max_omega_angle={4}, min_theta_angle={5},"
+                "wbfilter={6}".format(len(wbdist), min_wbridge_dist, max_wbridge_dist, min_omega_angle,
+                                      max_omega_angle, min_theta_angle, wbfilter))
 
     # Query for potential hbond donor-acceptor pairs
     accpt_attypes = ('N.3', 'N.2', 'N.1', 'N.acid', 'N.ar', 'O.3', 'O.co2', 'O.2', 'S.m', 'S.a', 'F', 'Br', 'Cl')
@@ -350,9 +350,9 @@ def eval_water_bridges(contacts, topology, min_wbridge_dist=0.25, max_wbridge_di
             contacts.loc[cid.index, ('target', 'angle')] = bridge[1]
 
             newindex = contacts.index.max() + 1
-            for mdx in contacts['target'].columns:
+            for mdx in [col for col in contacts['target'].columns if not col == 'index']:
                 contacts.loc[newindex, ('target', mdx)] = cid['target', mdx].values[0]
-            for mdx in contacts['source'].columns:
+            for mdx in [col for col in contacts['source'].columns if not col == 'index']:
                 contacts.loc[newindex, ('source', mdx)] = tid[mdx].values[0]
 
             contacts.loc[newindex, 'contact'] = 'wb-da'
@@ -407,9 +407,9 @@ def eval_water_bridges(contacts, topology, min_wbridge_dist=0.25, max_wbridge_di
             contacts.loc[cid.index, ('target', 'angle')] = bridge[1]
 
             newindex = contacts.index.max() + 1
-            for mdx in contacts['target'].columns:
+            for mdx in [col for col in contacts['target'].columns if not col == 'index']:
                 contacts.loc[newindex, ('target', mdx)] = cid['target', mdx].values[0]
-            for mdx in contacts['source'].columns:
+            for mdx in [col for col in contacts['source'].columns if not col == 'index']:
                 contacts.loc[newindex, ('source', mdx)] = tid[mdx].values[0]
 
             contacts.loc[newindex, 'contact'] = 'wb-ad'

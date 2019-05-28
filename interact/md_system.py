@@ -35,7 +35,7 @@ class System(object):
         self.nframes = None
         self.topology = None
 
-        list(self.iter_frames(start=0, stop=2, step=1, chunk=2, auto_chunk=False))
+        list(self.iter_frames(start=0, stop=1, step=1, chunk=1, auto_chunk=False))
 
     def __getitem__(self, frame):
         """
@@ -116,7 +116,7 @@ class System(object):
         try:
             self.timestep = trajectory.timestep
             self.starttime = trajectory.time[0]
-        except:
+        except (AttributeError, ValueError):
             self.nframes = 1
 
         # Create bonds if needed
@@ -137,9 +137,9 @@ class System(object):
                 mdtraj_dataframe = assign_standard_sybyl_types(mdtraj_dataframe)
 
                 # Then assign SYBYL types from the mol2 file
-                slice = mdtraj_dataframe[(mdtraj_dataframe['resSeq'] == mol2_df['resSeq']) &
-                                         (mdtraj_dataframe['name'] == mol2_df['name'])]
-                slice['attype'] = mol2_df['attype']
+                df_slice = mdtraj_dataframe[(mdtraj_dataframe['resSeq'] == mol2_df['resSeq']) &
+                                            (mdtraj_dataframe['name'] == mol2_df['name'])]
+                df_slice['attype'] = mol2_df['attype']
 
         # Init TopologyDataFrame based on mdtraj_dataframe
         self.topology = TopologyDataFrame(mdtraj_dataframe.copy())
@@ -161,21 +161,24 @@ class System(object):
         exists but NOT include it. The `step` argument allows to skip a certain
         number of frames.
 
-        :param start:      start reading at frame number
-        :type start:       :py:int
-        :param stop:       stop reading when reaching frame number
-        :type stop:        :py:int
-        :param step:       skip n number of frames
-        :type step:        :py:int
-        :param chunk:      number of frames read from disk into memory at each
-                           load iterations.
-        :type chunk:       :py:int
-        :param auto_chunk: automatically determine chunk size as function of
-                           available memory
-        :type auto_chunk:  :py:bool
+        :param start:           start reading at frame number
+        :type start:            :py:int
+        :param stop:            stop reading when reaching frame number
+        :type stop:             :py:int
+        :param step:            skip n number of frames
+        :type step:             :py:int
+        :param chunk:           number of frames read from disk into memory at
+                                each load iterations.
+        :type chunk:            :py:int
+        :param auto_chunk:      automatically determine chunk size as function
+                                of available memory
+        :type auto_chunk:       :py:bool
+        :param ave_byte_size:   average byte size of topology frame coordinate
+                                set used for automatic definition of chunk size
+        :type ave_byte_size:    :py:int
 
-        :returns:          TopologyDataFrame and frame count
-        :rtype:            :interact:TopologyDataFrame, :py:int
+        :returns:               TopologyDataFrame and frame count
+        :rtype:                 :interact:TopologyDataFrame, :py:int
         """
 
         # Determine chunk size as function of available memory
@@ -216,7 +219,6 @@ class System(object):
 
                 # Set frame coordinates
                 if self.topology is None:
-                    self._ave_byte_size = coords.nbytes
                     self._init_topology_dataframe(traj_chunk)
 
                 # Set frame coordinates in TopologyDataFrame

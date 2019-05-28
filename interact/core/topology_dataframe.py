@@ -57,7 +57,7 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         :rtype:       :py:bool
         """
 
-        return set(other.index).issubset(set(self.index))
+        return set(other.get_index()).issubset(set(self.get_index()))
 
     def __getitem__(self, item):
 
@@ -111,6 +111,10 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         """
 
         return self.columns.tolist()
+
+    def get_index(self):
+
+        return list(self.index)
 
     def charge(self, partial=False):
         """
@@ -202,9 +206,9 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         if target is None:
             target = self
 
-        # Get atom numbers for source and target set
-        source_atoms = self.index.values
-        target_atoms = target.index.values
+        # Get dataframe/series index for source and target set
+        source_atoms = self.get_index()
+        target_atoms = target.get_index()
 
         # Restrict size of pairwise matrix
         matrix_size = len(source_atoms) * len(target_atoms)
@@ -212,13 +216,10 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
             raise OverflowError('Pairwise distance matrix size to large {0} > {1}'.format(matrix_size,
                                                                                           max_distmat_size))
 
-        # Calculate pairwise distance matrix
+        # Calculate pairwise distance matrix and make DataFrame out of it
+        # using source and target index.
         distances = cdist(self.coord, target.coord, metric='euclidean')
-
-        # Reset index to match atom number
-        self._distance_matrix = DataFrame(distances)
-        self._distance_matrix.columns = target_atoms
-        self._distance_matrix.set_index(source_atoms, inplace=True)
+        self._distance_matrix = DataFrame(distances, index=source_atoms, columns=target_atoms)
 
         # Set in parent if called from child. Should not be needed and
         # creates one more retained object
@@ -267,14 +268,16 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         pairs. A distance cutoff is not applied but that can be easily done
         by quering on the resulting contact DataFrame.
 
-        :param target:  System DataFrame congaing a target selection
+        :param target:  system DataFrame congaing a target selection
         :type target:   :interact:TopologyDataFrame
+        :param intra:   calculate intra-molecular contacts
+        :type intra:    :py:bool
 
         :return:        all pairwise contacts between source and target
         :rtype:         :pandas:DataFrame
         """
 
-        source_index = set(self.index)
+        source_index = set(self.get_index())
 
         # Get intra-selection contacts (target == self)
         if intra:
@@ -284,9 +287,9 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         # Get index of source (current selection) and target (without source)
         else:
             if target is not None:
-                target_index = set(target.index).difference(source_index)
+                target_index = set(target.get_index()).difference(source_index)
             else:
-                target_index = set(self.index).difference(source_index)
+                target_index = set(self.get_index()).difference(source_index)
 
         # Get slice of contact matrix representing the selection, reformat to row based Dataframe
         contacts = self._distance_matrix.loc[source_index, target_index]
@@ -295,11 +298,11 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
 
         # Get selection for source and target from parent, reindex and concatenate into new DataFrame
         source = self._parent.loc[(self._parent.index.isin(contacts['source'])), :].copy()
-        source['index'] = source.index
+        source.insert(0, 'index', source.index)
         source = source.loc[contacts['source'], :]
         source.index = range(len(source))
         target = self._parent.loc[(self._parent.index.isin(contacts['target'])), :].copy()
-        target['index'] = target.index
+        target.insert(0, 'index', target.index)
         target = target.loc[contacts['target'], :]
         target.index = range(len(target))
 
@@ -321,10 +324,6 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         """
         Return covalently bonded atoms in the selection as ContactFrame
 
-        :param target:   Atom selection to use as target for the bond search.
-                         Needs to be derived from the same parent topology as
-                         the source selection.
-        :type target:    :interact:TopologyDataFrame
         :param cutoff:   covalent bond upper distance
         :type cutoff:    :py:float
 
@@ -502,8 +501,8 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
 
         return sssr(self, **kwargs)
 
-    def find_charged_centers(self, negative=True, positive=True, neg_atoms=('O.co2', 'S.O2', 'S.3'),
-                             pos_atoms=('N.4', 'N.pl3', 'N.ar')):
+    def find_charged_centers(self, negative=True, positive=True,
+                             neg_atoms=('O.co2', 'S.O2', 'S.3'), pos_atoms=('N.4', 'N.pl3', 'N.ar')):
         """
         Find charged centers in the current residue selection
 
@@ -514,6 +513,10 @@ class TopologyDataFrame(TopologyBaseClass, DataFrame):
         :type negative:     :py:bool
         :param positive:    include positive charged centers
         :type positive:     :py:bool
+        :param neg_atoms:   sybyl atom types of negative charged atoms to include
+        :type neg_atoms:    :py:tuple
+        :param pos_atoms:   sysbyl atom types of positive charged atoms to include
+        :type pos_atoms:    :py:tuple
         """
 
         centers = []

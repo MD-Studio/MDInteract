@@ -49,13 +49,7 @@ class TopologyBaseClass(object):
         if self._coordinates is None:
             raise AttributeError('Parent TopologyDataFrame has no coordinates, use set_coord first')
 
-        # TODO: coordinates are follow the same index as parent DataFrame. Series lost that index
-        # now using the atom serial which might not be the same.
-        if isinstance(self, Series):
-            coord = self._coordinates[self._coordinates.index == self['serial']]
-        else:
-            coord = self._coordinates.iloc[list(self.index)]
-
+        coord = self._coordinates.iloc[self.get_index()]
         if len(coord) == 1:
             return coord.values[0]
 
@@ -131,24 +125,22 @@ class TopologyBaseClass(object):
             raise AttributeError('Use set_distance_matrix to build a pairwise distance matrix first')
 
         # Get index of source (current selection) and target (without source)
-        source = self.index
-        if not isinstance(source, collections.Iterable):
-            source = [source]
+        source = self.get_index()
         source = set(source)
 
         if target is not None:
             if not self.contains(target):
                 raise TypeError('Target selection not contained in topology (selection')
-            target = set(target.index).difference(source)
+            target = set(target.get_index()).difference(source)
         else:
-            target = set(self._parent.index).difference(source)
+            target = set(self._parent.get_index()).difference(source)
 
         # Set cutoff in case of covalent but only when default cutoff used
         if covalent and cutoff == 0.6:
-            cutoff = constants['max_covalent_bond_dist'] 
+            cutoff = constants['max_covalent_bond_dist']
 
         # Get slice of contact matrix for source to target within cutoff distance
-        contacts = self._distance_matrix.iloc[target, source]
+        contacts = self._distance_matrix.loc[target, source]
         contacts = contacts[contacts <= cutoff].dropna(how='all')
 
         selection = self._parent[self._parent.index.isin(contacts.index)]

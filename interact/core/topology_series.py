@@ -29,6 +29,10 @@ class TopologySeries(TopologyBaseClass, Series):
 
         return self.axes[0].tolist()
 
+    def get_index(self):
+
+        return [self.name]
+
     def extend(self, mode='resSeq'):
         """
         Extend the current atom selection based on similarity in topology

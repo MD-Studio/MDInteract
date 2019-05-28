@@ -6,11 +6,9 @@ import logging
 
 from pandas import DataFrame
 
-from interact import __module__
-
 
 def mol2_to_dataframe(mol2_file, parse_multi_model=False, parse_coord=False,
-                      columns=['serial', 'name', 'x', 'y', 'z', 'resSeq', 'resName', 'attype', 'charge', 'model']):
+                      columns=('serial', 'name', 'x', 'y', 'z', 'resSeq', 'resName', 'attype', 'charge', 'model')):
     """
     Parse a Tripos MOL2 file format to a Pandas DataFrame
 
@@ -76,24 +74,24 @@ def mol2_to_dataframe(mol2_file, parse_multi_model=False, parse_coord=False,
             if read:
 
                 # Proper MOL2 file should have 9 columns
-                l = line.split()
-                if len(l) < 9:
+                split_line = line.split()
+                if len(split_line) < 9:
                     raise IOError('FormatError in mol2. Line: {0}'.format(line))
 
                 try:
-                    mol2_dict['serial'].append(int(l[0]))
-                    mol2_dict['name'].append(l[1].upper())
+                    mol2_dict['serial'].append(int(split_line[0]))
+                    mol2_dict['name'].append(split_line[1].upper())
 
                     # Parse atom coordinates or not
                     if parse_coord:
-                        mol2_dict['x'].append(float(l[2]))
-                        mol2_dict['y'].append(float(l[3]))
-                        mol2_dict['z'].append(float(l[4]))
+                        mol2_dict['x'].append(float(split_line[2]))
+                        mol2_dict['y'].append(float(split_line[3]))
+                        mol2_dict['z'].append(float(split_line[4]))
 
-                    mol2_dict['attype'].append(l[5])
-                    mol2_dict['resSeq'].append(int(l[6]))
-                    mol2_dict['resName'].append(re.sub('{0}$'.format(l[6]), '', l[7]))
-                    mol2_dict['charge'].append(float(l[8]))
+                    mol2_dict['attype'].append(split_line[5])
+                    mol2_dict['resSeq'].append(int(split_line[6]))
+                    mol2_dict['resName'].append(re.sub('{0}$'.format(split_line[6]), '', split_line[7]))
+                    mol2_dict['charge'].append(float(split_line[8]))
 
                 except ValueError as e:
                     raise IOError('FormatError in mol2. Line: {0}, error {1}'.format(line, e))

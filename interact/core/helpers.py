@@ -3,7 +3,7 @@
 from interact.core.geometry import is_planar
 
 
-def renumber(topology, start=None, column='resSeq', retain_gab=True):
+def renumber(topology, start=None, column='resSeq', retain_gap=True):
     """
     Renumber a numeric column in the TopologyDataFrame
 
@@ -14,12 +14,18 @@ def renumber(topology, start=None, column='resSeq', retain_gab=True):
     correct for this in the renumbered sequence.
 
     :param topology:
+    :type topology:     :interact:TopologyDataFrame
     :param start:       start number
+    :type:              :py:int
     :param column:      column name of numeric column to renumber
+    :type column:       :py:str
+    :param retain_gap:  preserve gaps in the numbering
+    :type retain_gap:   :py:bool
+
     :return:
     """
 
-    if not column in topology.columns:
+    if column not in topology.columns:
         raise TypeError('No such column: {0}'.format(column))
 
     numbers = topology[column].values
@@ -34,7 +40,7 @@ def renumber(topology, start=None, column='resSeq', retain_gab=True):
 
         if current != nr:
 
-            if retain_gab:
+            if retain_gap:
                 diff = nr - current
                 if diff > 1:
                     start += diff
@@ -75,17 +81,21 @@ def remove_contact_type(current, remove):
     return 'nd'
 
 
-def is_aromatic(ring, max_div=7.5, aromatic_attypes={'C.ar', 'N.ar', 'C.3', 'C.2', 'N.3', 'N.2', 'N.pl3', 'O.2'}):
+def is_aromatic(ring, max_div=7.5, aromatic_attypes=('C.ar', 'N.ar', 'C.3', 'C.2', 'N.3', 'N.2', 'N.pl3', 'O.2')):
     """
     Evaluate ring aromaticity
 
     Assumes that provided structure is a closed ring
 
-    :param ring:  ring atom selection
-    :type ring:   :interact:TopologyDataFrmae
+    :param ring:             ring atom selection
+    :type ring:              :interact:TopologyDataFrame
+    :param max_div:          maximum ring planarity deviation
+    :type max_div:           :py:float
+    :param aromatic_attypes: sybyl atom types in aromatic ring
+    :type aromatic_attypes:  :py:tuple
 
-    :return:      is aromatic or not
-    :rtype:       :py:bool
+    :return:                 is aromatic or not
+    :rtype:                  :py:bool
     """
 
     # Rule 1: ring should be planar

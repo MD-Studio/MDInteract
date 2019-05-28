@@ -59,7 +59,7 @@ def assign_standard_sybyl_types(dataframe, residue_name='resName', atom_name='na
     :param residue_name:    Residue name column header name in DataFrame
     :type residue_name:     :py:str
     :param atom_name:       Atom name column header name in DataFrame
-    :type atom§_name:       :py:str
+    :type atom_name:        :py:str
 
     :return:                System DataFrame with `attype` column added
     :rtype:                 :pandas:DataFrame

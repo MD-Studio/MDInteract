@@ -233,7 +233,7 @@ def radius_gyration(topology, mass=True):
     if mass:
         elements = reference_data['element_data']
         atom_mass = Series(elements.atomicMass.values, index=elements.symbol).to_dict()
-        scale = numpy.array([atom_mass.get(element, 12.0) for element in self['element']])
+        scale = numpy.array([atom_mass.get(element, 12.0) for element in topology['element']])
     else:
         scale = numpy.ones((len(coords), 1))
 
@@ -246,19 +246,15 @@ def radius_gyration(topology, mass=True):
     return (squared_dists * weights).sum(1) ** 0.5
 
 
-
-
-
-
-def rotation_matrix(angle, direction):
+def rotation_matrix(rot_angle, direction):
     """
     Define rotation matrix over a given angle and direction vector.
 
     TODO: Beter make this one use quaternion
     """
 
-    sina = math.sin(angle)
-    cosa = math.cos(angle)
+    sina = math.sin(rot_angle)
+    cosa = math.cos(rot_angle)
     direction = unit_vector(direction[:3])
 
     # rotation matrix around unit vector
