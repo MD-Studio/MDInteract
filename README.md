@@ -1,6 +1,7 @@
 # MDInteract
 
 [![Build Status](https://travis-ci.org/MD-Studio/MDInteract.svg?branch=master)](https://travis-ci.org/MD-Studio/MDInteract)
+[![PyPI version](https://badge.fury.io/py/mdinteract.svg)](https://badge.fury.io/py/mdinteract)
 
 Analyze biomolecular structures using the popular [Pandas](https://pandas.pydata.org) data analysis toolkit.
 
@@ -15,8 +16,10 @@ Using MDInteract you can:
 
 ### Installation
 
-Clone or download the MDInteract repository and install using pip:
+Install the stable release directly from the Python Package Index (PyPI)
 
-.. highlight:: console
+    pip install mdinteract
+
+Or, clone or download the cutting edge MDInteract repository and install using pip:
 
     pip install MDInteract/
