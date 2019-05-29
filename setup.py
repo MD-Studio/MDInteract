@@ -23,7 +23,7 @@
 
 from setuptools import setup, find_packages
 
-distribution_name = 'interact'
+distribution_name = 'mdinteract'
 
 setup(
     name='mdinteract',
