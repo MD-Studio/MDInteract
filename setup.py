@@ -26,7 +26,7 @@ from setuptools import setup, find_packages
 distribution_name = 'interact'
 
 setup(
-    name=distribution_name,
+    name='mdinteract',
     version=0.1,
     description='A Pandas interface to the analysis of biomolecular structures with MD trajectory support',
     author='Marc van Dijk - VU University - Amsterdam',
