@@ -1,5 +1,7 @@
 # MDInteract
 
+[![Build Status](https://travis-ci.org/MD-Studio/MDInteract.svg?branch=master)](https://travis-ci.org/MD-Studio/MDInteract)
+
 Analyze biomolecular structures using the popular [Pandas](https://pandas.pydata.org) data analysis toolkit.
 
 Using MDInteract you can:
