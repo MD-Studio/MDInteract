@@ -41,6 +41,7 @@ setup(
     test_suite="tests",
     install_requires=['mdtraj', 'pandas', 'scipy', 'psutil'],
     tests_require=['numpy'],
+    package_data={distribution_name: ['data/*.csv']},
     include_package_data=True,
     zip_safe=True,
     classifiers=[
