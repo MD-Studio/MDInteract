@@ -13,6 +13,7 @@ from numpy import ndarray
 from interact.core.topology_series import TopologySeries
 from interact.core.topology_dataframe import TopologyDataFrame
 from interact.md_system import System
+
 from tests.module.unittest_baseclass import UnittestPythonCompatibility, PY_PRIMITIVES
 
 

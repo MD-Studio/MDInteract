@@ -52,7 +52,7 @@ class TopologyDataframeTests(UnittestPythonCompatibility):
         Quick select all nucleic acids
         """
 
-        nucleic_acids = range(401, 414) + range(421, 434)
+        nucleic_acids = list(range(401, 414)) + list(range(421, 434))
 
         self.assertIsInstance(self.pdb.is_nucleic_acid(), TopologySeries)
         self.assertItemsEqual(set(self.pdb[self.pdb.is_nucleic_acid()]['resSeq']), nucleic_acids)
@@ -64,7 +64,7 @@ class TopologyDataframeTests(UnittestPythonCompatibility):
 
         self.assertIsInstance(self.pdb.is_nucleic_acid_backbone(), TopologySeries)
 
-        nucleic_acids = range(401, 414) + range(421, 434)
+        nucleic_acids = list(range(401, 414)) + list(range(421, 434))
         backbone = self.pdb[self.pdb.is_nucleic_acid_backbone()]
         self.assertItemsEqual(set(backbone['resSeq']), nucleic_acids)
         self.assertItemsEqual(set(backbone['name']), ('P', 'O1P', 'O2P', "O5'", "C5'", "1H5'", "2H5'", "C4'", "H4'",

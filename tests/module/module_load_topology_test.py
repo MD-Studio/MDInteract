@@ -7,15 +7,16 @@ Unit tests for the interact topology loader methods
 """
 
 import os
-import unittest
 
 from pandas import DataFrame
 
 from interact.md_system import System
 from interact.core.topology_dataframe import TopologyDataFrame
 
+from tests.module.unittest_baseclass import UnittestPythonCompatibility
 
-class LoadTopologyTests(unittest.TestCase):
+
+class LoadTopologyTests(UnittestPythonCompatibility):
     currpath = os.path.dirname(__file__)
     pdb_file = os.path.abspath(os.path.join(currpath, '../files/1acj.pdb'))
     mol_file = os.path.abspath(os.path.join(currpath, '../files/1acj.mol2'))

@@ -6,13 +6,11 @@ file: module_geometry_test.py
 Unit tests for the geometric calculation functions
 """
 
-import numpy
-import unittest
-
 from interact.core.geometry import *
+from tests.module.unittest_baseclass import UnittestPythonCompatibility
 
 
-class GeometryTests(unittest.TestCase):
+class GeometryTests(UnittestPythonCompatibility):
 
     def test_geometry_distance(self):
         """

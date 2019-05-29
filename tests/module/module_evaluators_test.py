@@ -8,7 +8,6 @@ ligand test cases
 """
 
 import os
-import unittest
 
 from interact.md_system import System
 from interact.interactions.hydrofobic import eval_hydrophobic_interactions, eval_pistacking
@@ -16,7 +15,8 @@ from interact.interactions.hbonds import eval_hbonds, eval_water_bridges
 from interact.interactions.charged import eval_saltbridge, eval_pication
 from interact.interactions.halogen import eval_halogen_bonds
 
-from test_data import *
+from tests.module.unittest_baseclass import UnittestPythonCompatibility
+from tests.module.test_data import *
 
 currpath = os.path.dirname(__file__)
 filepath = os.path.abspath(os.path.join(currpath, '../files'))
@@ -29,7 +29,7 @@ class EvaluatorTestBaseClass(object):
         """
         Prepare TopologyDataFrame once for every test
         """
-
+        
         pdb_file = '{0}/{1}.pdb'.format(filepath, cls.ref['pdb_id'])
         mol_file = '{0}/{1}.mol2'.format(filepath, cls.ref['pdb_id'])
 
@@ -62,7 +62,6 @@ class EvaluatorTestBaseClass(object):
         """
 
         neighbours = self.neighbour_selection[self.neighbour_selection['resName'] != 'HOH']
-        #print(list(neighbours['resSeq'].unique()))
         self.assertItemsEqual(set(neighbours['resSeq']), self.ref['neighbours'])
 
     def test_ligand_hydrophobic_interactions(self):
@@ -157,33 +156,33 @@ class EvaluatorTestBaseClass(object):
         self.assertItemsEqual(wbsel, self.ref['water_bridge'])
 
 
-class Evaluator1ACJTests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator1ACJTests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_1acj
 
 
-class Evaluator1AKUTests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator1AKUTests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_1aku
 
 
-class Evaluator1AY8Tests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator1AY8Tests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_1ay8
 
 
-class Evaluator1BJUTests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator1BJUTests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_1bju
 
 
-class Evaluator1BMATests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator1BMATests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_1bma
 
 
-class Evaluator1EVETests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator1EVETests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_1eve
 
 
-class Evaluator2REGTests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator2REGTests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_2reg
 
 
-class Evaluator2W0STests(EvaluatorTestBaseClass, unittest.TestCase):
+class Evaluator2W0STests(EvaluatorTestBaseClass, UnittestPythonCompatibility):
     ref = reference_2w0s
