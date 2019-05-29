@@ -9,10 +9,11 @@ Unit tests for the interact topology loader methods
 import os
 
 from numpy import ndarray
-from test_data import *
 
 from interact.md_system import System
+
 from tests.module.unittest_baseclass import UnittestPythonCompatibility
+from tests.module.test_data import *
 
 currpath = os.path.dirname(__file__)
 

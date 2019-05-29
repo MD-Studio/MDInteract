@@ -29,7 +29,7 @@ class EvaluatorTestBaseClass(object):
         """
         Prepare TopologyDataFrame once for every test
         """
-        
+
         pdb_file = '{0}/{1}.pdb'.format(filepath, cls.ref['pdb_id'])
         mol_file = '{0}/{1}.mol2'.format(filepath, cls.ref['pdb_id'])
 
