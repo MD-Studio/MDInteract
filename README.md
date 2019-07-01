@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/MD-Studio/MDInteract.svg?branch=master)](https://travis-ci.org/MD-Studio/MDInteract)
 [![PyPI version](https://badge.fury.io/py/mdinteract.svg)](https://badge.fury.io/py/mdinteract)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MD-Studio/MDInteract/master?filepath=examples)
 
 Analyze biomolecular structures using the popular [Pandas](https://pandas.pydata.org) data analysis toolkit.
 
@@ -13,6 +14,12 @@ Using MDInteract you can:
 - Analyze specific interaction types such as charged interactions, hydrogen bonding, water bridging, halogen 
   interactions and hydrophobic effects among others.
 - Calculate many geometric parameters (distance, angles, RMSD, vectors etc.)
+
+### Try before you install
+
+Get a feel of the basic functionality of MDInteract by running interactive demonstration Jupyter notebooks right
+in your browser. Just click the "launch binder" button, no registration required!
+
 
 ### Installation
 
