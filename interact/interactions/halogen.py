@@ -20,7 +20,7 @@ def eval_halogen_bonds(contact_frame, topology, min_dist=0.05, halogen_max_dist=
        only a single carbon neighbour.
     2) Halogen bond acceptor should be an carbonyl, hydroxyl, charged
        carboxylate, or phosphate group evaluated as an O,N,S element 
-       with one single ato neighbour of element type P,C or S.
+       with one single atom neighbour of element type P,C or S.
     3) Distance between donor and acceptor should be within `min_dist`
        and `halogen_max_dist`.
     4) The donor angle (C-X -- O) should not deviate more then

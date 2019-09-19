@@ -65,6 +65,9 @@ def eval_hydrophobic_interactions(contact_frame, topology, hydroph_dist_max=0.4,
            len(set(target_neighbours['attype']).difference(hfob_atom_list)) == 0:
             hfob_idx.append(hfob_index[n])
 
+    # For pairs involving same ligand atom and multiple atoms of same target
+    # protein residue and vice versa, retain only the pair with the smallest
+    # distance.
     hf = contact_frame.loc[hfob_idx]
     hf_filtered = filter_contacts(hf, source_sel='serial', target_sel='resSeq')
     logger.info('Filtered {0} redundant hydrophobic contacts'.format(len(hf) - len(hf_filtered)))
@@ -85,7 +88,7 @@ def eval_pistacking(contact_frame, topology, pistack_dist_max=0.55, pistack_ang_
     offset distance between the geometric center of one ring projected onto
     the other is no more than pistack_offset_max and if the angle between the
     normals of both rings does not deviate more than pistack_ang_dev from 180
-    deg for pi-stacking or 90+/-offset of T-stacking
+    deg for pi-stacking or 90+/-offset for T-stacking
 
     Identified pi- or T-stacking interactions are added to the contact_frame as
     contact between the geometric centers of the two rings represented by two
@@ -93,11 +96,6 @@ def eval_pistacking(contact_frame, topology, pistack_dist_max=0.55, pistack_ang_
     euclidean distance between the two dummy atoms and the target angle the
     smallest angle between the two ring normals. Pi-stacking contacts are
     marked 'ps' and T-stacking 'ts'
-
-    Atom selections representing the aromatic rings in the source and target
-    selections may be provided as list of TopologyDataFrames using the `rings`
-    argument. If not provided, a ring finding algorithm will be used to
-    identify rings.
 
     :param contact_frame:      contacts DataFrame
     :type contact_frame:       :pandas:DataFrame

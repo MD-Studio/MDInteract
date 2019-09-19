@@ -54,7 +54,7 @@ def eval_hbonds(contacts, topology, max_hbond_dist=0.41, hbond_don_anglediv=50.0
     2) Identify donor-acceptor pairs for source to target and target to
        source based on SYBYL atom types (see below).
     3) Check if donor has at least one covalently bonded H-atom
-    4) Check is angle between donor - H - acceptor does not deviate more
+    4) Check if angle between donor - H - acceptor does not deviate more
        than hbond_don_anglediv from it's ideal in-plane (180) degree
        orientation (cone fit), (Hubbard & Haider, 2001). The value for
        hbond_don_anglediv is either fixed or a function of the number
