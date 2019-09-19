@@ -168,6 +168,7 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
     # Is there an Oxygen above the heme (complex I) or do we need to place a dummy
     close_fe_neigh = fe.neighbours(cutoff=0.2)
     dummyox = close_fe_neigh[(close_fe_neigh['resName'] == 'HEM') & (close_fe_neigh['element'] == 'O')]
+    mv = numpy.mean(numpy.vstack((m1, m2, m3, m4)), axis=0)
     if len(dummyox) == 1:
         dummyox = dummyox.coord
         logger.info('Oxygen atom bonded to Fe (complex I)')
@@ -175,7 +176,6 @@ def eval_heme_coordination(contact_frame, topology, rings=None, heme_dist_prefil
     else:
         # Calculate dummy O atom from the average of the four normals
         # Normalize normal mean, change vector size to 1.6 A and set point
-        mv = numpy.mean(numpy.vstack((m1, m2, m3, m4)), axis=0)
         dummyox = ((mv / numpy.linalg.norm(mv)) * fe_ox_dist) + fe_coor
         logger.info("Reconstructed oxygen atom placed {0}nm above Heme Fe at position {1}".format(fe_ox_dist, ' '.join(
             ['{0:.3f}'.format(c) for c in dummyox])))
