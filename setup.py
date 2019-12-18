@@ -27,7 +27,7 @@ distribution_name = 'interact'
 
 setup(
     name='mdinteract',
-    version=0.1,
+    version=0.2,
     description='A Pandas interface to the analysis of biomolecular structures with MD trajectory support',
     author='Marc van Dijk - VU University - Amsterdam',
     author_email='m4.van.dijk@vu.nl',
